@@ -14,18 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM alpine:3.18 AS builder
+FROM alpine:3.23.0 AS builder
 
-RUN apk update && apk add git make g++ grpc-dev protobuf-dev linux-headers
-
-ARG CMAKE_VERSION=4.2.0
-RUN wget https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz \
-    && tar -xzvf cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz \
-    && mv cmake-${CMAKE_VERSION}-linux-x86_64 /opt/cmake \
-    && ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake \
-    && rm cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz \
-    && ls -l /usr/local/bin/cmake \
-    && /usr/local/bin/cmake --version
+RUN apk update && apk add git cmake make g++ grpc-dev protobuf-dev linux-headers
 
 ARG OPENTELEMETRY_CPP_VERSION
 
