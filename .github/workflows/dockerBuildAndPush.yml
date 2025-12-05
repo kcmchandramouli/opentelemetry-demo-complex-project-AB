@@ -11,27 +11,27 @@ on:
       - "task/**"
 
 jobs:
-  get-services:
-    runs-on: ubuntu-latest
-    outputs:
-      services: ${{ steps.set-matrix.outputs.services }}
-    steps:
-      - uses: actions/checkout@v4
+  # get-services:
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     services: ${{ steps.set-matrix.outputs.services }}
+  #   steps:
+  #     - uses: actions/checkout@v4
 
-      - id: set-matrix
-        name: Find all services in src/
-        run: |
-          dirs=$(find src -maxdepth 1 -mindepth 1 -type d -printf "%f\n")
-          json=$(printf '%s\n' "$dirs" | jq -R . | jq -s -c .)
-          echo "services=$json" >> $GITHUB_OUTPUT
+  #     - id: set-matrix
+  #       name: Find all services in src/
+  #       run: |
+  #         dirs=$(find src -maxdepth 1 -mindepth 1 -type d -printf "%f\n")
+  #         json=$(printf '%s\n' "$dirs" | jq -R . | jq -s -c .)
+  #         echo "services=$json" >> $GITHUB_OUTPUT
 
   build-and-push:
-    needs: get-services
+    # needs: get-services
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        service: ${{ fromJson(needs.get-services.outputs.services) }}
-      max-parallel: 1
+    # strategy:
+    #   matrix:
+    #     service: ${{ fromJson(needs.get-services.outputs.services) }}
+    #   max-parallel: 1
     steps:
       - uses: actions/checkout@v4
 
@@ -55,14 +55,21 @@ jobs:
       #     tags: ${{ vars.DOCKERHUB_USERNAME }}/${{ matrix.service }}:latest
       #     platforms: linux/amd64,linux/arm64
 
-      - name: Build Docker image
-        run: |
-          DOCKERFILE=./src/${{ matrix.service }}/Dockerfile
+      # - name: Build Docker image
+      #   run: |
+      #     DOCKERFILE=./src/${{ matrix.service }}/Dockerfile
 
-          if [ ! -f "$DOCKERFILE" ]; then
-            echo "Skipping "${{ matrix.service }}" service as no Docker file exist."
-            exit 0
-          fi
+      #     if [ ! -f "$DOCKERFILE" ]; then
+      #       echo "Skipping "${{ matrix.service }}" service as no Docker file exist."
+      #       exit 0
+      #     fi
           
-          echo "Building Docker image for service: ${{ matrix.service }}"
-          docker build --build-arg OTEL_JAVA_AGENT_VERSION=2.22.0 -t ${{ vars.DOCKERHUB_REPO }}/${{ matrix.service }}-ab:latest -f ./src/${{ matrix.service }}/Dockerfile .
+      #     echo "Building Docker image for service: ${{ matrix.service }}"
+      #     docker build --build-arg OTEL_JAVA_AGENT_VERSION=2.22.0 -t ${{ vars.DOCKERHUB_REPO }}/${{ matrix.service }}-ab:latest -f ./src/${{ matrix.service }}/Dockerfile .
+
+      - name: Build Docker image
+        run: |          
+          docker build --build-arg OTEL_JAVA_AGENT_VERSION=2.22.0 -t ${{ vars.DOCKERHUB_REPO }}/accounting-ab:latest -f ./src/accounting/Dockerfile .
+
+# List of services to build
+# accounting, 
