@@ -1,0 +1,68 @@
+name: Docker Build and Push all services
+
+on:
+  push:
+    branches:
+      - "master"
+      - "task/**"
+  pull_request:
+    branches:
+      - "master"
+      - "task/**"
+
+jobs:
+  get-services:
+    runs-on: ubuntu-latest
+    outputs:
+      services: ${{ steps.set-matrix.outputs.services }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: set-matrix
+        name: Find all services in src/
+        run: |
+          dirs=$(find src -maxdepth 1 -mindepth 1 -type d -printf "%f\n")
+          json=$(printf '%s\n' "$dirs" | jq -R . | jq -s -c .)
+          echo "services=$json" >> $GITHUB_OUTPUT
+
+  build-and-push:
+    needs: get-services
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: ${{ fromJson(needs.get-services.outputs.services) }}
+      max-parallel: 1
+    steps:
+      - uses: actions/checkout@v4
+
+      # - name: Login to Docker Hub
+      #   uses: docker/login-action@v3
+      #   with:
+      #     username: ${{ vars.DOCKERHUB_USERNAME }}
+      #     password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # - name: Build and push Docker image
+      #   uses: docker/build-push-action@v4
+      #   with:
+      #     context: ./src/${{ matrix.service }}
+      #     push: true
+      #     tags: ${{ vars.DOCKERHUB_USERNAME }}/${{ matrix.service }}:latest
+      #     platforms: linux/amd64,linux/arm64
+
+      - name: Build Docker image
+        run: |
+          DOCKERFILE=./src/${{ matrix.service }}/Dockerfile
+
+          if [ ! -f "$DOCKERFILE" ]; then
+            echo "Skipping "${{ matrix.service }}" service as no Docker file exist."
+            exit 0
+          fi
+          
+          echo "Building Docker image for service: ${{ matrix.service }}"
+          docker build --build-arg OTEL_JAVA_AGENT_VERSION=2.22.0 -t ${{ vars.DOCKERHUB_REPO }}/${{ matrix.service }}-ab:latest -f ./src/${{ matrix.service }}/Dockerfile .
