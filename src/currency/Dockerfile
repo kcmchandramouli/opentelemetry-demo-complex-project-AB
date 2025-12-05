@@ -14,10 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM alpine:3.23.0 AS builder
+FROM alpine:3.18 AS builder
 
 RUN apk update && apk add git cmake make g++ grpc-dev protobuf-dev linux-headers
-RUN cmake --version
 
 ARG OPENTELEMETRY_CPP_VERSION
 
