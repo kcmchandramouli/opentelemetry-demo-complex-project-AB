@@ -16,7 +16,14 @@
 
 FROM alpine:3.18 AS builder
 
-RUN apk update && apk add git cmake make g++ grpc-dev protobuf-dev linux-headers
+RUN apk update && apk add git make g++ grpc-dev protobuf-dev linux-headers
+
+ARG CMAKE_VERSION=3.26.4
+RUN wget https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz \
+    && tar -xzvf cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz \
+    && mv cmake-${CMAKE_VERSION}-linux-x86_64 /opt/cmake \
+    && ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake \
+    && rm cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz
 
 ARG OPENTELEMETRY_CPP_VERSION
 
