@@ -8,7 +8,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     mkdir -p /root/.cache/go-build
 
 # Copy
-COPY go.mod go.sum ./
+COPY src/product-catalog/go.mod src/product-catalog/go.sum ./
 
 # Download
 RUN go mod download
