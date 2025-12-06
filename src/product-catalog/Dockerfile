@@ -16,7 +16,7 @@ RUN go mod download
 # Copy the rest of the source code
 COPY src/product-catalog/ ./product-catalog
 
-RUN go build -o product-catalog .
+RUN go build -o /src/product-catalog .
 
 ####################################
 
