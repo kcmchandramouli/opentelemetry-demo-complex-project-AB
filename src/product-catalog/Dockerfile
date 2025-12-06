@@ -14,7 +14,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 # Copy the rest of the source code
-COPY . .
+COPY src/product-catalog/ ./product-catalog
 
 RUN go build -o product-catalog .
 

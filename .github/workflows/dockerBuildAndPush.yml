@@ -83,7 +83,9 @@ jobs:
           # docker build --build-arg OTEL_JAVA_AGENT_VERSION=2.22.0 -t ${{ vars.DOCKERHUB_REPO }}/kafka-ab:latest -f ./src/kafka/Dockerfile .
           # docker build -t ${{ vars.DOCKERHUB_REPO }}/load-generator-ab:latest -f ./src/load-generator/Dockerfile .
           # docker build -t ${{ vars.DOCKERHUB_REPO }}/opensearch-ab:latest -f ./src/opensearch/Dockerfile .
-          docker build -t ${{ vars.DOCKERHUB_REPO }}/payment-ab:latest -f ./src/payment/Dockerfile .
+          # docker build -t ${{ vars.DOCKERHUB_REPO }}/payment-ab:latest -f ./src/payment/Dockerfile .
+          # docker build -t ${{ vars.DOCKERHUB_REPO }}/postgres-ab:latest -f ./src/postgres/Dockerfile .
+          docker build -t ${{ vars.DOCKERHUB_REPO }}/product-catalog-ab:latest -f ./src/product-catalog/Dockerfile .
           
 
 
