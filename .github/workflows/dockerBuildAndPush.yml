@@ -76,7 +76,8 @@ jobs:
           # docker build --build-arg OPENTELEMETRY_CPP_VERSION=1.21.0 -t ${{ vars.DOCKERHUB_REPO }}/currency-ab:latest -f ./src/currency/Dockerfile .
           # docker build -t ${{ vars.DOCKERHUB_REPO }}/email-ab:latest -f ./src/email/Dockerfile .
           # docker build -t ${{ vars.DOCKERHUB_REPO }}/flagd-ui-ab:latest -f ./src/flagd-ui/Dockerfile .
-          docker build --build-arg OTEL_JAVA_AGENT_VERSION=2.22.0 -t ${{ vars.DOCKERHUB_REPO }}/fraud-detection-ab:latest -f ./src/fraud-detection/Dockerfile .
+          # docker build --build-arg OTEL_JAVA_AGENT_VERSION=2.22.0 -t ${{ vars.DOCKERHUB_REPO }}/fraud-detection-ab:latest -f ./src/fraud-detection/Dockerfile .
+          docker build -t ${{ vars.DOCKERHUB_REPO }}/frontend-ab:latest -f ./src/frontend/Dockerfile .
 
 # List of services to build
-# accounting ✅, ad ✅, cart ✅, checkout ✅, currency ✅, email ✅, flagd-ui
+# accounting ✅, ad ✅, cart ✅, checkout ✅, currency ✅, email ✅, flagd-ui ✅, fraud-detection ✅, frontend
