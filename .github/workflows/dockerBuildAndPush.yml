@@ -73,7 +73,7 @@ jobs:
           # docker build -t ${{ vars.DOCKERHUB_REPO }}/ad-ab:latest -f ./src/ad/Dockerfile .
           # docker build -t ${{ vars.DOCKERHUB_REPO }}/cart-ab:latest -f ./src/cart/src/Dockerfile .
           # docker build -t ${{ vars.DOCKERHUB_REPO }}/checkout-ab:latest -f ./src/checkout/Dockerfile .
-          docker build --build-arg OPENTELEMETRY_CPP_VERSION=1.24.0 -t ${{ vars.DOCKERHUB_REPO }}/currency-ab:latest -f ./src/currency/Dockerfile .
+          docker build --build-arg OPENTELEMETRY_CPP_VERSION=1.21.0 -t ${{ vars.DOCKERHUB_REPO }}/currency-ab:latest -f ./src/currency/Dockerfile .
 
 # List of services to build
-# accounting ✅, ad ✅, cart ✅, checkout ✅, currency ✅
+# accounting ✅, ad ✅, cart ✅, checkout ✅, currency
