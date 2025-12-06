@@ -81,8 +81,11 @@ jobs:
           # docker build -t ${{ vars.DOCKERHUB_REPO }}/frontend-proxy-ab:latest -f ./src/frontend-proxy/Dockerfile .
           # docker build -t ${{ vars.DOCKERHUB_REPO }}/image-provider-ab:latest -f ./src/image-provider/Dockerfile .
           # docker build --build-arg OTEL_JAVA_AGENT_VERSION=2.22.0 -t ${{ vars.DOCKERHUB_REPO }}/kafka-ab:latest -f ./src/kafka/Dockerfile .
-          docker build -t ${{ vars.DOCKERHUB_REPO }}/load-generator-ab:latest -f ./src/load-generator/Dockerfile .
+          # docker build -t ${{ vars.DOCKERHUB_REPO }}/load-generator-ab:latest -f ./src/load-generator/Dockerfile .
+          # docker build -t ${{ vars.DOCKERHUB_REPO }}/opensearch-ab:latest -f ./src/opensearch/Dockerfile .
+          docker build -t ${{ vars.DOCKERHUB_REPO }}/payment-ab:latest -f ./src/payment/Dockerfile .
+          
 
 
 # List of services to build
-# accounting ✅, ad ✅, cart ✅, checkout ✅, currency ✅, email ✅, flagd-ui ✅, fraud-detection ✅, frontend ✅, frontend-proxy ✅, image-provider ✅, kafka ✅, load-generator ✅
+# accounting ✅, ad ✅, cart ✅, checkout ✅, currency ✅, email ✅, flagd-ui ✅, fraud-detection ✅, frontend ✅, frontend-proxy ✅, image-provider ✅, kafka ✅, load-generator ✅, opensearch ✅, payment ✅
