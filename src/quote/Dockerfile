@@ -15,6 +15,9 @@ RUN chmod +x /usr/local/bin/install-php-extensions \
 WORKDIR /var/www
 CMD ["php", "public/index.php"]
 USER www-data
+
+ENV QUOTE_PORT=8999
+
 EXPOSE ${QUOTE_PORT}
 
 FROM composer:2.7 AS vendor
