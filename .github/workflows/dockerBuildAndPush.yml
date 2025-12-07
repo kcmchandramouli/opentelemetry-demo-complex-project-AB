@@ -87,7 +87,7 @@ jobs:
           # docker build -t ${{ vars.DOCKERHUB_REPO }}/postgres-ab:latest -f ./src/postgres/Dockerfile .
           # docker build -t ${{ vars.DOCKERHUB_REPO }}/product-catalog-ab:latest -f ./src/product-catalog/Dockerfile .
           # docker build -t ${{ vars.DOCKERHUB_REPO }}/recommendation-ab:latest -f ./src/recommendation/Dockerfile .
-          docker build --build-arg TARGETARCH=amd64 TARGETPLATFORM=linux/amd64 BUILDPLATFORM=linux/amd64 -t ${{ vars.DOCKERHUB_REPO }}/shipping-ab:latest -f ./src/shipping/Dockerfile .
+          docker build --build-arg TARGETARCH=amd64 --build-arg TARGETPLATFORM=linux/amd64 --build-arg BUILDPLATFORM=linux/amd64 -t ${{ vars.DOCKERHUB_REPO }}/shipping-ab:latest -f ./src/shipping/Dockerfile .
 
 
 # List of services to build
