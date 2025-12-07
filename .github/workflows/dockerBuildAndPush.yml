@@ -86,10 +86,10 @@ jobs:
           # docker build -t ${{ vars.DOCKERHUB_REPO }}/payment-ab:latest -f ./src/payment/Dockerfile .
           # docker build -t ${{ vars.DOCKERHUB_REPO }}/postgres-ab:latest -f ./src/postgres/Dockerfile .
           # docker build -t ${{ vars.DOCKERHUB_REPO }}/product-catalog-ab:latest -f ./src/product-catalog/Dockerfile .
-          docker build -t ${{ vars.DOCKERHUB_REPO }}/recomendation-ab:latest -f ./src/recomendation/Dockerfile .
+          docker build -t ${{ vars.DOCKERHUB_REPO }}/recommendation-ab:latest -f ./src/recommendation/Dockerfile .
           docker build --build-arg TARGETARCH=amd64 TARGETPLATFORM=linux/amd64 BUILDPLATFORM=linux/amd64 -t ${{ vars.DOCKERHUB_REPO }}/shipping-ab:latest -f ./src/shipping/Dockerfile .
 
 
 # List of services to build
 # accounting ✅, ad ✅, cart ✅, checkout ✅, currency ✅, email ✅, flagd-ui ✅, fraud-detection ✅, frontend ✅, frontend-proxy ✅, image-provider ✅, kafka ✅, load-generator ✅, opensearch ✅, payment ✅,
-# product-catalog ✅, quote ✅, recomendation ✅, shipping ✅
+# product-catalog ✅, quote ✅, recommendation ✅, shipping ✅
