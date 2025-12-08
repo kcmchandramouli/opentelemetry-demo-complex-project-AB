@@ -11,8 +11,32 @@ on:
       - "task/**"
 
 jobs:
+  security-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Trivy Installation
+        run: |
+          sudo apt-get install wget apt-transport-https gnupg lsb-release -y
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+          echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update -y
+          sudo apt-get install trivy -y
+
+      - name: Trivy Fs Scan
+        run: trivy fs --format table -o fs-report.json .
+
+      - name: Upload file-system artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Trivy-fs-report
+          path: fs-report.json
+
   get-services:
     runs-on: ubuntu-latest
+    needs: security-check
     outputs:
       services: ${{ steps.set-matrix.outputs.services }}
     steps:
@@ -31,15 +55,15 @@ jobs:
     strategy:
       matrix:
         service: ${{ fromJson(needs.get-services.outputs.services) }}
-      max-parallel: 1
+      # max-parallel: 1
     steps:
       - uses: actions/checkout@v4
 
-      # - name: Login to Docker Hub
-      #   uses: docker/login-action@v3
-      #   with:
-      #     username: ${{ vars.DOCKERHUB_USERNAME }}
-      #     password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PWD }}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -71,7 +95,7 @@ jobs:
         with:
           context: .
           file: ${{ steps.find_dockerfile.outputs.dockerfile }}
-          push: false
+          push: true
           tags: ${{ vars.DOCKERHUB_REPO }}/${{ matrix.service }}-ab:latest
           build-args: |
             OPENTELEMETRY_CPP_VERSION=1.21.0
@@ -79,43 +103,3 @@ jobs:
             TARGETARCH=amd64
             TARGETPLATFORM=linux/amd64
             BUILDPLATFORM=linux/amd64
-            
-
-      # - name: Build Docker image
-      #   run: |
-      #     DOCKERFILE=./src/${{ matrix.service }}/Dockerfile
-
-      #     if [ ! -f "$DOCKERFILE" ]; then
-      #       echo "Skipping "${{ matrix.service }}" service as no Docker file exist."
-      #       exit 0
-      #     fi
-          
-      #     echo "Building Docker image for service: ${{ matrix.service }}"
-      #     docker build --build-arg OTEL_JAVA_AGENT_VERSION=2.22.0 -t ${{ vars.DOCKERHUB_REPO }}/${{ matrix.service }}-ab:latest -f ./src/${{ matrix.service }}/Dockerfile .
-
-      # - name: Build Docker image
-      #   run: |          
-      #     # docker build -t ${{ vars.DOCKERHUB_REPO }}/accounting-ab:latest -f ./src/accounting/Dockerfile .
-      #     # docker build -t ${{ vars.DOCKERHUB_REPO }}/ad-ab:latest -f ./src/ad/Dockerfile .
-      #     # docker build -t ${{ vars.DOCKERHUB_REPO }}/cart-ab:latest -f ./src/cart/src/Dockerfile .
-      #     # docker build -t ${{ vars.DOCKERHUB_REPO }}/checkout-ab:latest -f ./src/checkout/Dockerfile .
-      #     # docker build --build-arg OPENTELEMETRY_CPP_VERSION=1.21.0 -t ${{ vars.DOCKERHUB_REPO }}/currency-ab:latest -f ./src/currency/Dockerfile .
-      #     # docker build -t ${{ vars.DOCKERHUB_REPO }}/email-ab:latest -f ./src/email/Dockerfile .
-      #     # docker build -t ${{ vars.DOCKERHUB_REPO }}/flagd-ui-ab:latest -f ./src/flagd-ui/Dockerfile .
-      #     # docker build --build-arg OTEL_JAVA_AGENT_VERSION=2.22.0 -t ${{ vars.DOCKERHUB_REPO }}/fraud-detection-ab:latest -f ./src/fraud-detection/Dockerfile .
-      #     # docker build -t ${{ vars.DOCKERHUB_REPO }}/frontend-ab:latest -f ./src/frontend/Dockerfile .
-      #     # docker build -t ${{ vars.DOCKERHUB_REPO }}/frontend-proxy-ab:latest -f ./src/frontend-proxy/Dockerfile .
-      #     # docker build -t ${{ vars.DOCKERHUB_REPO }}/image-provider-ab:latest -f ./src/image-provider/Dockerfile .
-      #     # docker build --build-arg OTEL_JAVA_AGENT_VERSION=2.22.0 -t ${{ vars.DOCKERHUB_REPO }}/kafka-ab:latest -f ./src/kafka/Dockerfile .
-      #     # docker build -t ${{ vars.DOCKERHUB_REPO }}/load-generator-ab:latest -f ./src/load-generator/Dockerfile .
-      #     # docker build -t ${{ vars.DOCKERHUB_REPO }}/opensearch-ab:latest -f ./src/opensearch/Dockerfile .
-      #     # docker build -t ${{ vars.DOCKERHUB_REPO }}/payment-ab:latest -f ./src/payment/Dockerfile .
-      #     # docker build -t ${{ vars.DOCKERHUB_REPO }}/postgres-ab:latest -f ./src/postgres/Dockerfile .
-      #     # docker build -t ${{ vars.DOCKERHUB_REPO }}/product-catalog-ab:latest -f ./src/product-catalog/Dockerfile .
-      #     # docker build -t ${{ vars.DOCKERHUB_REPO }}/recommendation-ab:latest -f ./src/recommendation/Dockerfile .
-      #     docker build --build-arg TARGETARCH=amd64 --build-arg TARGETPLATFORM=linux/amd64 --build-arg BUILDPLATFORM=linux/amd64 -t ${{ vars.DOCKERHUB_REPO }}/shipping-ab:latest -f ./src/shipping/Dockerfile .
-
-
-# List of services to build
-# accounting ✅, ad ✅, cart ✅, checkout ✅, currency ✅, email ✅, flagd-ui ✅, fraud-detection ✅, frontend ✅, frontend-proxy ✅, image-provider ✅, kafka ✅, load-generator ✅, opensearch ✅, payment ✅,
-# product-catalog ✅, quote ✅, recommendation ✅, shipping ✅
