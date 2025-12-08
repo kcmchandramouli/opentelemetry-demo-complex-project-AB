@@ -96,7 +96,7 @@ jobs:
           context: .
           file: ${{ steps.find_dockerfile.outputs.dockerfile }}
           push: true
-          tags: ${{ vars.DOCKERHUB_REPO }}/${{ matrix.service }}-ab:latest
+          tags: ${{ vars.DOCKERHUB_REPO }}/opentelemetry-demo-complex-project-ab:${{ matrix.service }}
           build-args: |
             OPENTELEMETRY_CPP_VERSION=1.21.0
             OTEL_JAVA_AGENT_VERSION=2.22.0
