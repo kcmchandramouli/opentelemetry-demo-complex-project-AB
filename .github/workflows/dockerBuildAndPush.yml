@@ -70,9 +70,9 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          dockerfile: ${{ steps.find_dockerfile.outputs.dockerfile }}
+          file: ${{ steps.find_dockerfile.outputs.dockerfile }}
           push: false
-          tags: ${{ vars.DOCKERHUB_REPO }}/${{ matrix.service }}:latest
+          tags: ${{ vars.DOCKERHUB_REPO }}/${{ matrix.service }}-ab:latest
           build-args: |
             OPENTELEMETRY_CPP_VERSION=1.21.0
             OTEL_JAVA_AGENT_VERSION=2.22.0
