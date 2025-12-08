@@ -69,7 +69,7 @@ jobs:
         if: steps.find_dockerfile.outputs.found == 'true'
         uses: docker/build-push-action@v6
         with:
-          context: ./src/${{ matrix.service }}
+          context: .
           dockerfile: ${{ steps.find_dockerfile.outputs.dockerfile }}
           push: false
           tags: ${{ vars.DOCKERHUB_REPO }}/${{ matrix.service }}:latest
