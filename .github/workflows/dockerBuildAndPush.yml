@@ -11,27 +11,27 @@ on:
       - "task/**"
 
 jobs:
-  # get-services:
-  #   runs-on: ubuntu-latest
-  #   outputs:
-  #     services: ${{ steps.set-matrix.outputs.services }}
-  #   steps:
-  #     - uses: actions/checkout@v4
+  get-services:
+    runs-on: ubuntu-latest
+    outputs:
+      services: ${{ steps.set-matrix.outputs.services }}
+    steps:
+      - uses: actions/checkout@v4
 
-  #     - id: set-matrix
-  #       name: Find all services in src/
-  #       run: |
-  #         dirs=$(find src -maxdepth 1 -mindepth 1 -type d -printf "%f\n")
-  #         json=$(printf '%s\n' "$dirs" | jq -R . | jq -s -c .)
-  #         echo "services=$json" >> $GITHUB_OUTPUT
+      - id: set-matrix
+        name: Find all services in src/
+        run: |
+          dirs=$(find src -maxdepth 1 -mindepth 1 -type d -printf "%f\n")
+          json=$(printf '%s\n' "$dirs" | jq -R . | jq -s -c .)
+          echo "services=$json" >> $GITHUB_OUTPUT
 
   build-and-push:
-    # needs: get-services
+    needs: get-services
     runs-on: ubuntu-latest
-    # strategy:
-    #   matrix:
-    #     service: ${{ fromJson(needs.get-services.outputs.services) }}
-    #   max-parallel: 1
+    strategy:
+      matrix:
+        service: ${{ fromJson(needs.get-services.outputs.services) }}
+      max-parallel: 1
     steps:
       - uses: actions/checkout@v4
 
@@ -47,13 +47,39 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # - name: Build and push Docker image
-      #   uses: docker/build-push-action@v4
-      #   with:
-      #     context: ./src/${{ matrix.service }}
-      #     push: true
-      #     tags: ${{ vars.DOCKERHUB_USERNAME }}/${{ matrix.service }}:latest
-      #     platforms: linux/amd64,linux/arm64
+      - name: Locate Dockerfile
+        id: find_dockerfile
+        run: |
+          SERVICE_DIR="./src/${{ matrix.service }}"
+      
+          # Search recursively for Dockerfile
+          DOCKERFILE=$(find "$SERVICE_DIR" -type f -name "Dockerfile" | head -n 1)
+      
+          if [ -z "$DOCKERFILE" ]; then
+            echo "⏭️ No Dockerfile for ${{ matrix.service }} — skipping build"
+            echo "found=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+      
+          echo "📄 Found Dockerfile: $DOCKERFILE"
+          echo "found=true" >> $GITHUB_OUTPUT
+          echo "dockerfile=$DOCKERFILE" >> $GITHUB_OUTPUT
+
+      - name: Build and push Docker image
+        if: steps.find_dockerfile.outputs.found == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: ./src/${{ matrix.service }}
+          dockerfile: ${{ steps.find_dockerfile.outputs.dockerfile }}
+          push: false
+          tags: ${{ vars.DOCKERHUB_USERNAME }}/${{ matrix.service }}:latest
+          build-args: |
+            OPENTELEMETRY_CPP_VERSION=1.21.0
+            OTEL_JAVA_AGENT_VERSION=2.22.0
+            TARGETARCH=amd64
+            TARGETPLATFORM=linux/amd64
+            BUILDPLATFORM=linux/amd64
+            
 
       # - name: Build Docker image
       #   run: |
@@ -67,27 +93,27 @@ jobs:
       #     echo "Building Docker image for service: ${{ matrix.service }}"
       #     docker build --build-arg OTEL_JAVA_AGENT_VERSION=2.22.0 -t ${{ vars.DOCKERHUB_REPO }}/${{ matrix.service }}-ab:latest -f ./src/${{ matrix.service }}/Dockerfile .
 
-      - name: Build Docker image
-        run: |          
-          # docker build -t ${{ vars.DOCKERHUB_REPO }}/accounting-ab:latest -f ./src/accounting/Dockerfile .
-          # docker build -t ${{ vars.DOCKERHUB_REPO }}/ad-ab:latest -f ./src/ad/Dockerfile .
-          # docker build -t ${{ vars.DOCKERHUB_REPO }}/cart-ab:latest -f ./src/cart/src/Dockerfile .
-          # docker build -t ${{ vars.DOCKERHUB_REPO }}/checkout-ab:latest -f ./src/checkout/Dockerfile .
-          # docker build --build-arg OPENTELEMETRY_CPP_VERSION=1.21.0 -t ${{ vars.DOCKERHUB_REPO }}/currency-ab:latest -f ./src/currency/Dockerfile .
-          # docker build -t ${{ vars.DOCKERHUB_REPO }}/email-ab:latest -f ./src/email/Dockerfile .
-          # docker build -t ${{ vars.DOCKERHUB_REPO }}/flagd-ui-ab:latest -f ./src/flagd-ui/Dockerfile .
-          # docker build --build-arg OTEL_JAVA_AGENT_VERSION=2.22.0 -t ${{ vars.DOCKERHUB_REPO }}/fraud-detection-ab:latest -f ./src/fraud-detection/Dockerfile .
-          # docker build -t ${{ vars.DOCKERHUB_REPO }}/frontend-ab:latest -f ./src/frontend/Dockerfile .
-          # docker build -t ${{ vars.DOCKERHUB_REPO }}/frontend-proxy-ab:latest -f ./src/frontend-proxy/Dockerfile .
-          # docker build -t ${{ vars.DOCKERHUB_REPO }}/image-provider-ab:latest -f ./src/image-provider/Dockerfile .
-          # docker build --build-arg OTEL_JAVA_AGENT_VERSION=2.22.0 -t ${{ vars.DOCKERHUB_REPO }}/kafka-ab:latest -f ./src/kafka/Dockerfile .
-          # docker build -t ${{ vars.DOCKERHUB_REPO }}/load-generator-ab:latest -f ./src/load-generator/Dockerfile .
-          # docker build -t ${{ vars.DOCKERHUB_REPO }}/opensearch-ab:latest -f ./src/opensearch/Dockerfile .
-          # docker build -t ${{ vars.DOCKERHUB_REPO }}/payment-ab:latest -f ./src/payment/Dockerfile .
-          # docker build -t ${{ vars.DOCKERHUB_REPO }}/postgres-ab:latest -f ./src/postgres/Dockerfile .
-          # docker build -t ${{ vars.DOCKERHUB_REPO }}/product-catalog-ab:latest -f ./src/product-catalog/Dockerfile .
-          # docker build -t ${{ vars.DOCKERHUB_REPO }}/recommendation-ab:latest -f ./src/recommendation/Dockerfile .
-          docker build --build-arg TARGETARCH=amd64 --build-arg TARGETPLATFORM=linux/amd64 --build-arg BUILDPLATFORM=linux/amd64 -t ${{ vars.DOCKERHUB_REPO }}/shipping-ab:latest -f ./src/shipping/Dockerfile .
+      # - name: Build Docker image
+      #   run: |          
+      #     # docker build -t ${{ vars.DOCKERHUB_REPO }}/accounting-ab:latest -f ./src/accounting/Dockerfile .
+      #     # docker build -t ${{ vars.DOCKERHUB_REPO }}/ad-ab:latest -f ./src/ad/Dockerfile .
+      #     # docker build -t ${{ vars.DOCKERHUB_REPO }}/cart-ab:latest -f ./src/cart/src/Dockerfile .
+      #     # docker build -t ${{ vars.DOCKERHUB_REPO }}/checkout-ab:latest -f ./src/checkout/Dockerfile .
+      #     # docker build --build-arg OPENTELEMETRY_CPP_VERSION=1.21.0 -t ${{ vars.DOCKERHUB_REPO }}/currency-ab:latest -f ./src/currency/Dockerfile .
+      #     # docker build -t ${{ vars.DOCKERHUB_REPO }}/email-ab:latest -f ./src/email/Dockerfile .
+      #     # docker build -t ${{ vars.DOCKERHUB_REPO }}/flagd-ui-ab:latest -f ./src/flagd-ui/Dockerfile .
+      #     # docker build --build-arg OTEL_JAVA_AGENT_VERSION=2.22.0 -t ${{ vars.DOCKERHUB_REPO }}/fraud-detection-ab:latest -f ./src/fraud-detection/Dockerfile .
+      #     # docker build -t ${{ vars.DOCKERHUB_REPO }}/frontend-ab:latest -f ./src/frontend/Dockerfile .
+      #     # docker build -t ${{ vars.DOCKERHUB_REPO }}/frontend-proxy-ab:latest -f ./src/frontend-proxy/Dockerfile .
+      #     # docker build -t ${{ vars.DOCKERHUB_REPO }}/image-provider-ab:latest -f ./src/image-provider/Dockerfile .
+      #     # docker build --build-arg OTEL_JAVA_AGENT_VERSION=2.22.0 -t ${{ vars.DOCKERHUB_REPO }}/kafka-ab:latest -f ./src/kafka/Dockerfile .
+      #     # docker build -t ${{ vars.DOCKERHUB_REPO }}/load-generator-ab:latest -f ./src/load-generator/Dockerfile .
+      #     # docker build -t ${{ vars.DOCKERHUB_REPO }}/opensearch-ab:latest -f ./src/opensearch/Dockerfile .
+      #     # docker build -t ${{ vars.DOCKERHUB_REPO }}/payment-ab:latest -f ./src/payment/Dockerfile .
+      #     # docker build -t ${{ vars.DOCKERHUB_REPO }}/postgres-ab:latest -f ./src/postgres/Dockerfile .
+      #     # docker build -t ${{ vars.DOCKERHUB_REPO }}/product-catalog-ab:latest -f ./src/product-catalog/Dockerfile .
+      #     # docker build -t ${{ vars.DOCKERHUB_REPO }}/recommendation-ab:latest -f ./src/recommendation/Dockerfile .
+      #     docker build --build-arg TARGETARCH=amd64 --build-arg TARGETPLATFORM=linux/amd64 --build-arg BUILDPLATFORM=linux/amd64 -t ${{ vars.DOCKERHUB_REPO }}/shipping-ab:latest -f ./src/shipping/Dockerfile .
 
 
 # List of services to build
