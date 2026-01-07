@@ -52,6 +52,7 @@ jobs:
   build-and-push:
     needs: get-services
     runs-on: ubuntu-latest
+    environment: Production
     strategy:
       matrix:
         service: ${{ fromJson(needs.get-services.outputs.services) }}
