@@ -10,6 +10,10 @@ on:
       - "master"
       - "task/**"
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   security-check:
     runs-on: ubuntu-latest
